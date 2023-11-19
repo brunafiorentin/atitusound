@@ -1,8 +1,8 @@
 package br.edu.atitus.pooavancado.atitusound.controllers;
 
-import br.edu.atitus.pooavancado.atitusound.entities.GenericEntity;
 import br.edu.atitus.pooavancado.atitusound.entities.PlaylistEntity;
 import br.edu.atitus.pooavancado.atitusound.entities.dtos.PlaylistDTO;
+import br.edu.atitus.pooavancado.atitusound.services.GenericService;
 import br.edu.atitus.pooavancado.atitusound.services.PlaylistService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,14 +12,23 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/playlist")
-public abstract class PlaylistController<TEntidade extends GenericEntity, TDTO> {
+@RequestMapping("/playlists")
+public abstract class PlaylistController extends GenericController<PlaylistEntity, PlaylistDTO> {
+    private final PlaylistService service;
 
-    private PlaylistService playlistService;
+    public PlaylistController(PlaylistService service) {
+        super();
+        this.service = service;
+    }
+
+    @Override
+    protected GenericService<PlaylistEntity> getService() {
+        return service;
+    }
 
     @GetMapping
     public ResponseEntity<List<PlaylistEntity>> getAll() throws Exception {
-        List<PlaylistEntity> playlistEntities = playlistService.findAll();
+        List<PlaylistEntity> playlistEntities = service.findAll();
 
         return ResponseEntity.ok(playlistEntities);
     }
@@ -28,7 +37,7 @@ public abstract class PlaylistController<TEntidade extends GenericEntity, TDTO> 
     public ResponseEntity<PlaylistEntity> create(@RequestBody PlaylistDTO dto) throws Exception {
         PlaylistEntity playlistEntity = convertDTO2Entity(dto);
 
-        playlistService.save(playlistEntity);
+        service.save(playlistEntity);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(playlistEntity);
     }
@@ -39,7 +48,7 @@ public abstract class PlaylistController<TEntidade extends GenericEntity, TDTO> 
         playlistEntity.setUuid(uuid);
 
         try {
-            playlistService.save(playlistEntity);
+            service.save(playlistEntity);
         } catch (Exception e) {
             return ResponseEntity.badRequest().header("error", e.getMessage()).build();
         }
@@ -49,7 +58,7 @@ public abstract class PlaylistController<TEntidade extends GenericEntity, TDTO> 
     @DeleteMapping("/{uuid}")
     public ResponseEntity<?> delete(@PathVariable UUID uuid) {
         try {
-            playlistService.deleteById(uuid);
+            service.deleteById(uuid);
         } catch (Exception e) {
             return ResponseEntity.badRequest().header("error", e.getMessage()).build();
         }
@@ -58,9 +67,9 @@ public abstract class PlaylistController<TEntidade extends GenericEntity, TDTO> 
     }
 
     protected PlaylistEntity convertDTO2Entity(PlaylistDTO dto) {
-        PlaylistEntity entidade = new PlaylistEntity();
-        entidade.setName(dto.getName());
-        entidade.setPublic_share(dto.getPublic_share());
-        return entidade;
+        PlaylistEntity playlist = new PlaylistEntity();
+        playlist.setName(dto.getName());
+        playlist.setPublic_share(dto.getPublic_share());
+        return playlist;
     }
 }

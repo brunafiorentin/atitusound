@@ -1,8 +1,9 @@
 package br.edu.atitus.pooavancado.atitusound.controllers;
 
-import br.edu.atitus.pooavancado.atitusound.entities.GenericEntity;
+import br.edu.atitus.pooavancado.atitusound.entities.ArtistEntity;
 import br.edu.atitus.pooavancado.atitusound.entities.MusicEntity;
 import br.edu.atitus.pooavancado.atitusound.entities.dtos.MusicDTO;
+import br.edu.atitus.pooavancado.atitusound.services.GenericService;
 import br.edu.atitus.pooavancado.atitusound.services.MusicService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,16 +13,23 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("music")
-public abstract class MusicController<TEntidade extends GenericEntity, TDTO> {
+@RequestMapping("/musics")
+public abstract class MusicController extends GenericController<MusicEntity, MusicDTO> {
 
-    private MusicService musicService;
+    private final MusicService service;
 
-    abstract TEntidade convertDTO2Entity(TDTO dto);
+    public MusicController(MusicService service) {
+        this.service = service;
+    }
+
+    @Override
+    protected GenericService<MusicEntity> getService() {
+        return service;
+    }
 
     @GetMapping
     public ResponseEntity<List<MusicEntity>> getAll() throws Exception {
-        List<MusicEntity> musicEntities = musicService.findAll();
+        List<MusicEntity> musicEntities = service.findAll();
 
         return ResponseEntity.ok(musicEntities);
     }
@@ -30,7 +38,7 @@ public abstract class MusicController<TEntidade extends GenericEntity, TDTO> {
     public ResponseEntity<MusicEntity> create(@RequestBody MusicDTO dto) throws Exception {
         MusicEntity musicEntity = convertDTO2Entity(dto);
 
-        musicService.save(musicEntity);
+        service.save(musicEntity);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(musicEntity);
     }
@@ -41,7 +49,7 @@ public abstract class MusicController<TEntidade extends GenericEntity, TDTO> {
         musicEntity.setUuid(uuid);
 
         try {
-            musicService.save(musicEntity);
+            service.save(musicEntity);
         } catch (Exception e) {
             return ResponseEntity.badRequest().header("error", e.getMessage()).build();
         }
@@ -51,7 +59,7 @@ public abstract class MusicController<TEntidade extends GenericEntity, TDTO> {
     @DeleteMapping("/{uuid}")
     public ResponseEntity<?> delete(@PathVariable UUID uuid) {
         try {
-            musicService.deleteById(uuid);
+            service.deleteById(uuid);
         } catch (Exception e) {
             return ResponseEntity.badRequest().header("error", e.getMessage()).build();
         }
@@ -59,7 +67,7 @@ public abstract class MusicController<TEntidade extends GenericEntity, TDTO> {
 
     }
 
-
+    @Override
     protected MusicEntity convertDTO2Entity(MusicDTO dto) {
         MusicEntity entidade = new MusicEntity();
         entidade.setName(dto.getName());

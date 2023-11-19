@@ -50,7 +50,7 @@ public class ArtistController extends GenericController<ArtistEntity, ArtistDTO>
 	}
 
 	@Override
-	GenericService<ArtistEntity> getService() {
+	public GenericService<ArtistEntity> getService() {
 		return artistService;
 	}
 

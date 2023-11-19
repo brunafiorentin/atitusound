@@ -6,7 +6,7 @@ import java.time.Duration;
 import java.util.UUID;
 
 @Entity
-@Table(name = "music")
+@Table(name = "tb_music")
 public class MusicEntity extends GenericEntity {
 
     @Id
@@ -24,6 +24,10 @@ public class MusicEntity extends GenericEntity {
 
     @Column(nullable = false)
     private String url;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(nullable = false, name = "artist_uuid")
+    private ArtistEntity artist;
 
     public UUID getUuid() {
         return uuid;

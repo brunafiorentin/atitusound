@@ -4,6 +4,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
@@ -21,11 +26,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import br.edu.atitus.pooavancado.atitusound.entities.GenericEntity;
 import br.edu.atitus.pooavancado.atitusound.services.GenericService;
 
+@ApiResponses(value = {
+		@ApiResponse(responseCode = "400", description = "ERRO DE VALIDAÇÃO OU REQUISIÇÃO INVÁLIDA",
+				content = @Content, headers = @Header(name = "error", description = "Descrição do erro", schema = @Schema(implementation = String.class))),
+		@ApiResponse(responseCode = "401", description = "UNAUTHORIZED", content = @Content),
+		@ApiResponse(responseCode = "403", description = "FORBIDDEN", content = @Content)
+})
 public abstract class GenericController<TEntidade extends GenericEntity, TDTO> {
 
-	abstract GenericService<TEntidade> getService();
+	protected abstract GenericService<TEntidade> getService();
 	
-	abstract TEntidade convertDTO2Entity(TDTO dto);
+	protected abstract TEntidade convertDTO2Entity(TDTO dto);
 
 	@DeleteMapping("/{uuid}")
 	public ResponseEntity<?> delete(@PathVariable UUID uuid) {
@@ -64,8 +75,10 @@ public abstract class GenericController<TEntidade extends GenericEntity, TDTO> {
 	}
 	
 	@GetMapping
-	public ResponseEntity<Page<List<TEntidade>>> getAll(@PageableDefault(page = 0, size = 10, sort = "name", direction = Direction.ASC) Pageable pageable,
-							@RequestParam String name) {
+	@ApiResponse(responseCode = "200", description = "OK")
+	public ResponseEntity<Page<List<TEntidade>>> getFind(
+			@PageableDefault(page = 0, size = 10, sort = "name", direction = Direction.ASC) Pageable pageable,
+			@RequestParam String name) {
 		Page<List<TEntidade>> entidades;
 		try {
 			entidades = getService().findByNameContainingIgnoreCase(pageable, name);
@@ -76,7 +89,8 @@ public abstract class GenericController<TEntidade extends GenericEntity, TDTO> {
 	}
 
 	@PostMapping
-	public ResponseEntity<TEntidade> save(@RequestBody TDTO dto) {
+	@ApiResponse(responseCode = "201", description = "REGISTRO CRIADO COM SUCESSO!")
+	public ResponseEntity<TEntidade> postSave(@RequestBody TDTO dto) {
 		TEntidade entidade = convertDTO2Entity(dto);
 		try {
 			getService().save(entidade);

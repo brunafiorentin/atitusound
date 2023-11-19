@@ -3,43 +3,48 @@ package br.edu.atitus.pooavancado.atitusound.entities;
 import jakarta.persistence.*;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "playlist")
+@Table(name = "tb_playlist")
 public class PlaylistEntity extends GenericEntity{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID uuid;
+    @Column(nullable = false, name = "public_share")
+    private boolean publicshare;
 
-    @Column(nullable = false)
-    private String name;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "tb_playlist_music",
+            joinColumns = @JoinColumn(name = "playlist_uuid"),
+            inverseJoinColumns = @JoinColumn(name = "music_uuid"))
+    private List<MusicEntity> musics;
 
-    @Column(nullable = false)
-    private Boolean public_share;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_uuid", nullable = false)
+    private UserEntity user;
 
-    public UUID getUuid() {
-        return uuid;
+
+    public boolean getPublic_share() {
+        return publicshare;
     }
 
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
+    public void setPublic_share(boolean public_share) {
+        this.publicshare = public_share;
     }
 
-    public String getName() {
-        return name;
+    public List<MusicEntity> getMusics() {
+        return musics;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setMusics(List<MusicEntity> musics) {
+        this.musics = musics;
     }
 
-    public Boolean getPublic_share() {
-        return public_share;
+    public UserEntity getUser() {
+        return user;
     }
 
-    public void setPublic_share(Boolean public_share) {
-        this.public_share = public_share;
+    public void setUser(UserEntity user) {
+        this.user = user;
     }
 }

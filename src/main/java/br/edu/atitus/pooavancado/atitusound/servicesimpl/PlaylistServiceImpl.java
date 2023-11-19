@@ -1,24 +1,39 @@
 package br.edu.atitus.pooavancado.atitusound.servicesimpl;
 
 import br.edu.atitus.pooavancado.atitusound.entities.PlaylistEntity;
+import br.edu.atitus.pooavancado.atitusound.entities.UserEntity;
 import br.edu.atitus.pooavancado.atitusound.repositories.GenericRepository;
+import br.edu.atitus.pooavancado.atitusound.repositories.PlaylistRepository;
 import br.edu.atitus.pooavancado.atitusound.services.PlaylistService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Service
 public class PlaylistServiceImpl implements PlaylistService {
-    @Override
-    public GenericRepository<PlaylistEntity> getRepository() {
-        return null;
+
+    private final PlaylistRepository repository;
+
+    public PlaylistServiceImpl(PlaylistRepository repository) {
+        super();
+        this.repository = repository;
     }
 
     @Override
-    public void validate(PlaylistEntity playlistEntity) throws Exception {
-        PlaylistService.super.validate(playlistEntity);
+    public GenericRepository<PlaylistEntity> getRepository() {
+        return repository;
+    }
+
+    @Override
+    public void validate(PlaylistEntity entity) throws Exception {
+        PlaylistService.super.validate(entity);
+        UserEntity user = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        entity.setUser(user);
     }
 
     @Override
@@ -43,6 +58,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     public Page<List<PlaylistEntity>> findByNameContainingIgnoreCase(Pageable pageable, String name) throws Exception {
-        return PlaylistService.super.findByNameContainingIgnoreCase(pageable, name);
+        UserEntity user = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return repository.findByNameContainingIgnoreCaseAndUserOrPublicshare(pageable, name, user, true);
     }
 }
